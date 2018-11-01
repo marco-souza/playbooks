@@ -1,0 +1,45 @@
+---
+- hosts: vps
+  # gather_facts: False
+  vars:
+    home: "{{ ansible_env.HOME }}"
+    workspace: "{{ home }}/dev"
+  tasks:
+    # Vars
+    # - set_fact: home="{{ ansible_env.HOME }}"
+    # - set_fact: workspace="{{ home }}/dev"
+
+    - name: debug through ansible.env
+      debug: var="{{item}}"
+      with_items:
+        - home
+        - workspace
+
+    - name: "Setup Python"
+      raw: test -e /usr/bin/python || (apt -y update && apt install -y python-minimal)
+
+
+    - name: "Make workspace folder"
+      file:
+        path:
+          - "{{ workspace }}"
+        state: directory
+
+
+    - name: "Install Dependencies"
+      become: true
+      apt:
+        name:
+          - git
+          - fish
+          - python-pip
+        update_cache: yes
+
+
+    - name: "Clone fish-config"
+      git:
+        repo: https://github.com/marco-souza/fish-config.git
+        dest: "{{ workspace }}/fish-config"
+        clone: yes
+        recursive: yes
+        # update: yes
