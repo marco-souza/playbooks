@@ -1,8 +1,42 @@
 ---
 - hosts: vps
-  gather_facts: False
-  become_user: marco
+  vars:
+    home: "{{ ansible_env.HOME }}"
+    mine_data: "{{ home }}/data/minecraft_data"
+    settings: "{{ mine_data }}/server.properties"
   tasks:
-    - name: "Check and "
-      become_user: root
-      raw: test -e /usr/bin/python || (apt -y update && apt install -y python-minimal)
+    - name: Create data directory
+      file:
+        path:
+          - "{{ mine_data }}"
+        state: directory
+
+    - name: Install docker-py
+      pip:
+        name: docker-py
+
+    - name: Create Minecraft server
+      docker_container:
+        name: mineserver
+        image: itzg/minecraft-server
+        state: started
+        volumes:
+          - "{{ mine_data }}:/data"
+        ports:
+          - "25565:25565"
+          - "25575:25575"
+        env:
+          VERSION: LATEST
+          TYPE: SPIGOT
+          EULA: TRUE
+
+    - name: Put spigot in offline mode
+      replace:
+        dest: "{{ settings }}"
+        regexp: 's/online-mode=true/online-mode=false/g'
+
+    - name: Restart Minecraft server
+      docker_container:
+        name: mineserver
+        state: started
+        restart: yes
