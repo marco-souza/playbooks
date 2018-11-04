@@ -1,0 +1,35 @@
+---
+- hosts: vps
+  vars:
+    home: "{{ ansible_env.HOME }}"
+    mine_data: "{{ home }}/data/minecraft_data"
+    settings: "{{ mine_data }}/server.properties"
+    seed: 402235076210671426
+  tasks:
+
+    - name: Delete world folder
+      file:
+        state: absent
+        path: "{{ mine_data }}/world"
+
+    - name: Delete world_nether folder
+      file:
+        state: absent
+        path: "{{ mine_data }}/world_nether"
+
+    - name: Delete world_the_end folder
+      file:
+        state: absent
+        path: "{{ mine_data }}/world_the_end"
+
+    - name: Change seed
+      replace:
+        path: "{{ settings }}"
+        regexp: 'level-seed=($|[0-9]*)'
+        replace: "level-seed={{ seed }}"
+
+    - name: Restart Minecraft server
+      docker_container:
+        name: mineserver
+        state: started
+        restart: yes
