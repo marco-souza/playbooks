@@ -1,30 +1,25 @@
 ---
+# The computer needs to have its id_rsa.pub registered in your in github
 - hosts: vps
-  # gather_facts: False
   vars:
     home: "{{ ansible_env.HOME }}"
     workspace: "{{ home }}/dev"
   tasks:
-    # Vars
-    # - set_fact: home="{{ ansible_env.HOME }}"
-    # - set_fact: workspace="{{ home }}/dev"
 
-    - name: debug through ansible.env
-      debug: var="{{item}}"
-      with_items:
-        - home
-        - workspace
+      # - name: debug through ansible.env
+      #   debug: var="{{item}}"
+      #   with_items:
+      #   - home
+      #   - workspace
 
     - name: "Setup Python"
       raw: test -e /usr/bin/python || (apt -y update && apt install -y python-minimal)
-
 
     - name: "Make workspace folder"
       file:
         path:
           - "{{ workspace }}"
         state: directory
-
 
     - name: "Install Dependencies"
       become: true
@@ -34,7 +29,8 @@
           - fish
           - python-pip
         update_cache: yes
-
+      pip:
+        name: docker-py
 
     - name: "Clone fish-config"
       git:
@@ -42,4 +38,11 @@
         dest: "{{ workspace }}/fish-config"
         clone: yes
         recursive: yes
-        # update: yes
+
+    - name: Apply fish config
+      shell: make
+      args:
+        chdir: "{{ workspace }}/fish-config"
+
+    - name: Replace bash
+      command: "echo -e '\n\n# start fish\nfish; exit' >> {{ home }}/.bashrc"
