@@ -4,7 +4,7 @@
     home: "{{ ansible_env.HOME }}"
     mine_data: "{{ home }}/data/minecraft_data"
     settings: "{{ mine_data }}/server.properties"
-    seed: 402235076210671426
+    seed: "{{ seed }}"
   tasks:
 
     - name: Delete world folder
