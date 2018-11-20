@@ -1,0 +1,12 @@
+---
+- hosts: vps
+  vars:
+    home: "{{ ansible_env.HOME }}"
+    mine_data: "{{ home }}/data/minecraft_data"
+    settings: "{{ mine_data }}/server.properties"
+  tasks:
+    - name: Restart Minecraft server
+      docker_container:
+        name: mineserver
+        state: started
+        restart: yes
